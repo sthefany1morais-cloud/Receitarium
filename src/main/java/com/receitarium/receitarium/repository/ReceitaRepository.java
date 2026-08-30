@@ -19,7 +19,10 @@ public class ReceitaRepository {
     }
 
     public Receita buscarPorId(Long id) {
-        return entityManager.find(Receita.class, id);
+        return entityManager.find(
+                Receita.class,
+                id
+        );
     }
 
     public List<Receita> listarTodas() {
@@ -31,13 +34,31 @@ public class ReceitaRepository {
                 .getResultList();
     }
 
+    public List<Receita> buscarPorCategoria(Long categoriaId) {
+        return entityManager
+                .createQuery(
+                        """
+                        SELECT DISTINCT r
+                        FROM Receita r
+                        JOIN r.categorias c
+                        WHERE c.id = :categoriaId
+                        """,
+                        Receita.class
+                )
+                .setParameter("categoriaId", categoriaId)
+                .getResultList();
+    }
+
     public Receita atualizar(Receita receita) {
         return entityManager.merge(receita);
     }
 
     public void excluir(Long id) {
         Receita receita =
-                entityManager.find(Receita.class, id);
+                entityManager.find(
+                        Receita.class,
+                        id
+                );
 
         if (receita != null) {
             entityManager.remove(receita);

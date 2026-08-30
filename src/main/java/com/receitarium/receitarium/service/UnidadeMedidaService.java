@@ -1,5 +1,6 @@
 package com.receitarium.receitarium.service;
 
+import com.receitarium.receitarium.dto.UnidadeMedidaDTO;
 import com.receitarium.receitarium.entity.UnidadeMedida;
 import com.receitarium.receitarium.repository.UnidadeMedidaRepository;
 import jakarta.transaction.Transactional;
@@ -15,25 +16,85 @@ public class UnidadeMedidaService {
     private final UnidadeMedidaRepository repository;
 
     @Transactional
-    public UnidadeMedida salvar(UnidadeMedida unidadeMedida) {
-        return repository.salvar(unidadeMedida);
+    public UnidadeMedidaDTO salvar(UnidadeMedidaDTO dto) {
+
+        UnidadeMedida unidadeMedida =
+                UnidadeMedida.builder()
+                        .nome(dto.getNome())
+                        .sigla(dto.getSigla())
+                        .build();
+
+        UnidadeMedida salva =
+                repository.salvar(unidadeMedida);
+
+        return converterParaDTO(salva);
     }
 
-    public UnidadeMedida buscarPorId(Long id) {
-        return repository.buscarPorId(id);
+    public UnidadeMedidaDTO buscarPorId(Long id) {
+
+        UnidadeMedida unidadeMedida =
+                repository.buscarPorId(id);
+
+        if (unidadeMedida == null) {
+            return null;
+        }
+
+        return converterParaDTO(unidadeMedida);
     }
 
-    public List<UnidadeMedida> listarTodas() {
-        return repository.listarTodas();
+    public List<UnidadeMedidaDTO> listarTodas() {
+
+        return repository.listarTodas()
+                .stream()
+                .map(this::converterParaDTO)
+                .toList();
     }
 
     @Transactional
-    public UnidadeMedida atualizar(UnidadeMedida unidadeMedida) {
-        return repository.atualizar(unidadeMedida);
+    public UnidadeMedidaDTO atualizar(
+            Long id,
+            UnidadeMedidaDTO dto
+    ) {
+
+        UnidadeMedida existente =
+                repository.buscarPorId(id);
+
+        if (existente == null) {
+            return null;
+        }
+
+        existente.setNome(dto.getNome());
+        existente.setSigla(dto.getSigla());
+
+        UnidadeMedida atualizada =
+                repository.atualizar(existente);
+
+        return converterParaDTO(atualizada);
     }
 
     @Transactional
-    public void excluir(Long id) {
+    public boolean excluir(Long id) {
+
+        UnidadeMedida existente =
+                repository.buscarPorId(id);
+
+        if (existente == null) {
+            return false;
+        }
+
         repository.excluir(id);
+
+        return true;
+    }
+
+    private UnidadeMedidaDTO converterParaDTO(
+            UnidadeMedida unidadeMedida
+    ) {
+
+        return UnidadeMedidaDTO.builder()
+                .id(unidadeMedida.getId())
+                .nome(unidadeMedida.getNome())
+                .sigla(unidadeMedida.getSigla())
+                .build();
     }
 }

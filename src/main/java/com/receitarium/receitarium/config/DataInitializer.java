@@ -1,18 +1,16 @@
 package com.receitarium.receitarium.config;
 
-import com.receitarium.receitarium.entity.UnidadeMedida;
+import com.receitarium.receitarium.dto.UnidadeMedidaDTO;
 import com.receitarium.receitarium.service.UnidadeMedidaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
     private final UnidadeMedidaService service;
-
-    public DataInitializer(UnidadeMedidaService service) {
-        this.service = service;
-    }
 
     @Override
     public void run(String... args) {
@@ -20,15 +18,24 @@ public class DataInitializer implements CommandLineRunner {
         if (service.listarTodas().isEmpty()) {
 
             service.salvar(
-                    new UnidadeMedida("Unidade", "un")
+                    UnidadeMedidaDTO.builder()
+                            .nome("Unidade")
+                            .sigla("un")
+                            .build()
             );
 
             service.salvar(
-                    new UnidadeMedida("Grama", "g")
+                    UnidadeMedidaDTO.builder()
+                            .nome("Grama")
+                            .sigla("g")
+                            .build()
             );
 
             service.salvar(
-                    new UnidadeMedida("Mililitro", "ml")
+                    UnidadeMedidaDTO.builder()
+                            .nome("Mililitro")
+                            .sigla("ml")
+                            .build()
             );
         }
     }
