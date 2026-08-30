@@ -1,9 +1,7 @@
 package com.receitarium.receitarium.config;
 
 import com.receitarium.receitarium.entity.UnidadeMedida;
-import com.receitarium.receitarium.repository.UnidadeMedidaRepository;
 import com.receitarium.receitarium.service.UnidadeMedidaService;
-import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 

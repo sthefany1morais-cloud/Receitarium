@@ -65,6 +65,21 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.46</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Swagger -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

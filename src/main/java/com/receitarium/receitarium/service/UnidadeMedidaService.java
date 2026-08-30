@@ -3,18 +3,16 @@ package com.receitarium.receitarium.service;
 import com.receitarium.receitarium.entity.UnidadeMedida;
 import com.receitarium.receitarium.repository.UnidadeMedidaRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UnidadeMedidaService {
 
     private final UnidadeMedidaRepository repository;
-
-    public UnidadeMedidaService(UnidadeMedidaRepository repository) {
-        this.repository = repository;
-    }
 
     @Transactional
     public UnidadeMedida salvar(UnidadeMedida unidadeMedida) {
