@@ -25,6 +25,11 @@ public class CategoriaService {
     }
 
     public Categoria salvar(Categoria categoria) {
+
+        Categoria categoriaSalva =
+                Categoria.builder()
+                .nome(categoria.getNome())
+                .build();
         return categoriaRepository.salvar(categoria);
     }
 
