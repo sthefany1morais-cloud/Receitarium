@@ -41,4 +41,8 @@ public class Receita {
     )
     @Builder.Default
     private List<Categoria> categorias = new ArrayList<>();
+
+    @OneToMany(mappedBy = "receita")
+    @Builder.Default
+    private List<ReceitaIngrediente> ingredientes = new ArrayList<>();
 }

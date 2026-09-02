@@ -8,18 +8,17 @@ import com.receitarium.receitarium.entity.ReceitaIngrediente;
 import com.receitarium.receitarium.entity.UnidadeMedida;
 import com.receitarium.receitarium.repository.ReceitaIngredienteRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class ReceitaIngredienteService {
 
     private final ReceitaIngredienteRepository receitaIngredienteRepository;
 
-    public ReceitaIngredienteService(ReceitaIngredienteRepository receitaIngredienteRepository) {
-        this.receitaIngredienteRepository = receitaIngredienteRepository;
-    }
 
     @Transactional
     public ReceitaIngredienteDTO salvar(ReceitaIngredienteDTO dto) {
@@ -55,6 +54,7 @@ public class ReceitaIngredienteService {
 
     @Transactional
     public ReceitaIngredienteDTO atualizar(Long id, ReceitaIngredienteDTO dto) {
+
         ReceitaIngrediente existente = receitaIngredienteRepository.buscarPorId(id);
 
         if (existente == null) {
@@ -66,7 +66,7 @@ public class ReceitaIngredienteService {
         existente.setQuantidade(dto.getQuantidade());
         existente.setIngrediente(ingrediente);
 
-        ReceitaIngrediente atualizada = receitaIngredienteRepository.salvar(existente);
+        ReceitaIngrediente atualizada = receitaIngredienteRepository.atualizar(existente);
 
         return converterParaDTO(atualizada);
     }
