@@ -1,44 +1,91 @@
 package com.receitarium.receitarium.service;
 
+import com.receitarium.receitarium.dto.CategoriaDTO;
 import com.receitarium.receitarium.entity.Categoria;
 import com.receitarium.receitarium.repository.CategoriaRepository;
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
+@AllArgsConstructor
 @Service
 public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
 
-    public CategoriaService(CategoriaRepository categoriaRepository) {
-        this.categoriaRepository = categoriaRepository;
+
+    @Transactional
+    public CategoriaDTO salvar(CategoriaDTO dto) {
+
+        Categoria categoria =
+              Categoria.builder()
+                        .nome(dto.getNome())
+                        .build();
+
+        Categoria salvo = categoriaRepository.salvar(categoria);
+
+        return converterParaDTO(salvo);
     }
 
-    public List<Categoria> listarTodas() {
-        return categoriaRepository.listarTodas();
+
+    public CategoriaDTO buscarPorId(Long id) {
+
+        Categoria categoria = categoriaRepository.buscarPorId(id);
+
+        if (categoria == null) {
+            return null;
+        }
+
+        return converterParaDTO(categoria);
+    }
+    public List<CategoriaDTO> listarTodas() {
+
+        return categoriaRepository.listarTodas()
+                .stream()
+                .map(this::converterParaDTO)
+                .toList();
     }
 
-    public Optional<Categoria> buscarPorId(Long id) {
-        return Optional.ofNullable(categoriaRepository.buscarPorId(id));
+
+    @Transactional
+    public CategoriaDTO atualizar(CategoriaDTO dto, Long id) {
+
+        Categoria existente = categoriaRepository.buscarPorId(id);
+
+        if(existente == null){
+            return null;
+        }
+
+        existente.setNome(dto.getNome());
+
+        Categoria atualizado = categoriaRepository.atualizar(existente);
+
+        return converterParaDTO(atualizado);
     }
 
-    public Categoria salvar(Categoria categoria) {
 
-        Categoria categoriaSalva =
-                Categoria.builder()
+    @Transactional
+    public boolean excluir(Long id) {
+
+        Categoria categoria = categoriaRepository.buscarPorId(id);
+
+        if(categoria == null){
+            return false;
+        }
+
+        categoriaRepository.excluir(id);
+        return true;
+    }
+
+
+    private CategoriaDTO converterParaDTO(Categoria categoria){
+
+        return CategoriaDTO.builder()
+                .id(categoria.getId())
                 .nome(categoria.getNome())
                 .build();
-        return categoriaRepository.salvar(categoria);
-    }
-
-    public Categoria atualizar(Categoria categoria) {
-        return categoriaRepository.atualizar(categoria);
-    }
-
-    public void excluir(Long id) {
-        categoriaRepository.excluir(id);
     }
 
 }

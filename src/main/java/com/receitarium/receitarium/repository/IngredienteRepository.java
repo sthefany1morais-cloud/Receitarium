@@ -22,7 +22,7 @@ public class IngredienteRepository {
         return entityManager.find(Ingrediente.class, id);
     }
 
-    public List<Ingrediente> listarTodos() {
+    public List<Ingrediente> listarTodas() {
         return entityManager
                 .createQuery(
                         "SELECT i FROM Ingrediente i",

@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -102,7 +101,7 @@ public class ReceitaService {
         return true;
     }
 
-    public ReceitaDTO converterParaDTO(Receita receita) {
+    private ReceitaDTO converterParaDTO(Receita receita) {
 
         return ReceitaDTO.builder()
                 .id(receita.getId())
