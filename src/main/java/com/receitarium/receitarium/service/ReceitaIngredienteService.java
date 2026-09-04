@@ -6,6 +6,7 @@ import com.receitarium.receitarium.dto.UnidadeMedidaDTO;
 import com.receitarium.receitarium.entity.Ingrediente;
 import com.receitarium.receitarium.entity.ReceitaIngrediente;
 import com.receitarium.receitarium.entity.UnidadeMedida;
+import com.receitarium.receitarium.repository.IngredienteRepository;
 import com.receitarium.receitarium.repository.ReceitaIngredienteRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,19 @@ import java.util.List;
 public class ReceitaIngredienteService {
 
     private final ReceitaIngredienteRepository receitaIngredienteRepository;
+    private final IngredienteRepository ingredienteRepository;
 
 
     @Transactional
     public ReceitaIngredienteDTO salvar(ReceitaIngredienteDTO dto) {
+
+        if(dto == null || dto.getIngrediente() == null) {
+            throw new IllegalArgumentException("Ingrediente não pode ser nulo.");
+        }
+
+        if(dto.getQuantidade() == null || dto.getQuantidade().signum() <= 0) {
+            throw new IllegalArgumentException("Quantidade não pode ser nula.");
+        }
 
         Ingrediente ingrediente = converterParaEntidade(dto.getIngrediente());
 
@@ -36,6 +46,11 @@ public class ReceitaIngredienteService {
     }
 
     public ReceitaIngredienteDTO buscarPorId(Long id) {
+
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("ID inválido.");
+        }
+
         ReceitaIngrediente receitaIngrediente = receitaIngredienteRepository.buscarPorId(id);
 
         if (receitaIngrediente == null) {
@@ -59,6 +74,14 @@ public class ReceitaIngredienteService {
 
         if (existente == null) {
             return null;
+        }
+
+        if(dto == null || dto.getIngrediente() == null) {
+            throw new IllegalArgumentException("Ingrediente não pode ser nulo.");
+        }
+
+        if(dto.getQuantidade() == null || dto.getQuantidade().signum() <= 0) {
+            throw new IllegalArgumentException("Quantidade não pode ser nula.");
         }
 
         Ingrediente ingrediente = converterParaEntidade(dto.getIngrediente());
@@ -112,23 +135,20 @@ public class ReceitaIngredienteService {
     }
 
     private Ingrediente converterParaEntidade(IngredienteDTO dto) {
-        if (dto == null) {
+
+        if (dto == null || dto.getId() == null) {
             return null;
         }
 
-        UnidadeMedida unidadeMedida = null;
-        if (dto.getUnidadeMedida() != null) {
-            unidadeMedida = UnidadeMedida.builder()
-                    .id(dto.getUnidadeMedida().getId())
-                    .nome(dto.getUnidadeMedida().getNome())
-                    .sigla(dto.getUnidadeMedida().getSigla())
-                    .build();
+        Ingrediente ingrediente =
+                ingredienteRepository.buscarPorId(dto.getId());
+
+        if (ingrediente == null) {
+            throw new IllegalArgumentException(
+                    "Ingrediente não encontrado."
+            );
         }
 
-        return Ingrediente.builder()
-                .id(dto.getId())
-                .nome(dto.getNome())
-                .unidadeMedida(unidadeMedida)
-                .build();
+        return ingrediente;
     }
 }

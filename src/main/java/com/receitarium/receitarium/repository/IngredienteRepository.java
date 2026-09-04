@@ -43,4 +43,27 @@ public class IngredienteRepository {
             entityManager.remove(ingrediente);
         }
     }
+
+    public Ingrediente buscarPorNome(String nome) {
+        return entityManager.createQuery(
+                        "SELECT i FROM Ingrediente i WHERE i.nome = :nome",
+                        Ingrediente.class
+                )
+                .setParameter("nome", nome)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
+
+    public boolean existePorIngrediente(Long ingredienteId) {
+        Long quantidade = entityManager.createQuery(
+                        "SELECT COUNT(ri) FROM ReceitaIngrediente ri " +
+                                "WHERE ri.ingrediente.id = :ingredienteId",
+                        Long.class
+                )
+                .setParameter("ingredienteId", ingredienteId)
+                .getSingleResult();
+
+        return quantidade > 0;
+    }
 }

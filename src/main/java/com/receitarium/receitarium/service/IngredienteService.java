@@ -22,6 +22,12 @@ public class IngredienteService {
     @Transactional
     public IngredienteDTO salvar(IngredienteDTO dto) {
 
+        Ingrediente existente = ingredienteRepository.buscarPorNome(dto.getNome());
+
+        if(existente != null){
+            throw new RuntimeException("Ingrediente já existente");
+        }
+
         Ingrediente ingrediente = Ingrediente.builder()
                 .nome(dto.getNome())
                 .unidadeMedida(
@@ -63,6 +69,12 @@ public class IngredienteService {
             return null;
         }
 
+        Ingrediente ingredienteHomonimo = ingredienteRepository.buscarPorNome(dto.getNome());
+
+        if(ingredienteHomonimo != null && !ingredienteHomonimo.getId().equals(id)){
+            throw new RuntimeException("Ingrediente já existente");
+        }
+
         existente.setNome(dto.getNome());
         existente.setUnidadeMedida(
                 converterUnidadeDeMedidaParaEntidade(dto.getUnidadeMedida())
@@ -82,6 +94,10 @@ public class IngredienteService {
 
         if (ingrediente == null) {
             return false;
+        }
+
+        if(ingredienteRepository.existePorIngrediente(id)){
+            throw new RuntimeException("Ingrediente não pode ser excluido");
         }
 
         ingredienteRepository.excluir(id);

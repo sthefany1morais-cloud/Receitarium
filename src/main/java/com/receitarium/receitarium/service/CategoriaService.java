@@ -19,6 +19,12 @@ public class CategoriaService {
     @Transactional
     public CategoriaDTO salvar(CategoriaDTO dto) {
 
+        Categoria existente = categoriaRepository.buscarPorNome(dto.getNome());
+
+        if(existente != null){
+            throw new RuntimeException("Categoria já existente");
+        }
+
         Categoria categoria =
               Categoria.builder()
                         .nome(dto.getNome())
@@ -58,6 +64,12 @@ public class CategoriaService {
             return null;
         }
 
+        Categoria categoriaHomonima = categoriaRepository.buscarPorNome(dto.getNome());
+
+        if(categoriaHomonima != null && !categoriaHomonima.getId().equals(id)){
+            throw new RuntimeException("Categoria já existente");
+        }
+
         existente.setNome(dto.getNome());
 
         Categoria atualizado = categoriaRepository.atualizar(existente);
@@ -73,6 +85,10 @@ public class CategoriaService {
 
         if(categoria == null){
             return false;
+        }
+
+        if(categoriaRepository.existePorCategoria(id)){
+            throw new RuntimeException("Categoria não pode ser excluida");
         }
 
         categoriaRepository.excluir(id);
