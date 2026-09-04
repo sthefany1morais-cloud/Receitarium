@@ -64,4 +64,5 @@ public class ReceitaRepository {
             entityManager.remove(receita);
         }
     }
+
 }

@@ -1,9 +1,6 @@
 package com.receitarium.receitarium.service;
 
-import com.receitarium.receitarium.dto.CategoriaDTO;
-import com.receitarium.receitarium.dto.IngredienteDTO;
-import com.receitarium.receitarium.dto.ReceitaDTO;
-import com.receitarium.receitarium.dto.ReceitaIngredienteDTO;
+import com.receitarium.receitarium.dto.*;
 import com.receitarium.receitarium.entity.Categoria;
 import com.receitarium.receitarium.entity.Ingrediente;
 import com.receitarium.receitarium.entity.Receita;
@@ -13,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -60,6 +58,52 @@ public class ReceitaService {
                 .stream()
                 .map(this::converterParaDTO)
                 .toList();
+    }
+
+    public List<ReceitaDTO> buscarPorCategoria(Long categoriaId) {
+
+        return receitaRepository.buscarPorCategoria(categoriaId)
+                .stream()
+                .map(this::converterParaDTO)
+                .toList();
+    }
+
+
+    public List<ListaComprasDTO> gerarListaDeCompras(List<ReceitaDTO> receitas) {
+
+        List<ListaComprasDTO> listaCompras = new ArrayList<>();
+
+        for (ReceitaDTO receita : receitas) {
+
+            for (ReceitaIngredienteDTO receitaIngrediente : receita.getIngredientes()) {
+
+                ListaComprasDTO itemExistente = listaCompras.stream()
+                        .filter(item -> item.getIngrediente().getId()
+                                .equals(receitaIngrediente.getIngrediente().getId()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (itemExistente != null) {
+
+                    itemExistente.setQuantidade(
+                            itemExistente.getQuantidade()
+                                    .add(receitaIngrediente.getQuantidade())
+                    );
+
+                } else {
+
+                    ListaComprasDTO novoItem = ListaComprasDTO.builder()
+                            .ingrediente(receitaIngrediente.getIngrediente())
+                            .quantidade(receitaIngrediente.getQuantidade())
+                            .unidadeMedida(receitaIngrediente.getUnidadeMedida())
+                            .build();
+
+                    listaCompras.add(novoItem);
+                }
+            }
+        }
+
+        return listaCompras;
     }
 
     @Transactional
