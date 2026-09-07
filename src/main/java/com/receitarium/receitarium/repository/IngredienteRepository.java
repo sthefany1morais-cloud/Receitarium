@@ -55,15 +55,4 @@ public class IngredienteRepository {
                 .orElse(null);
     }
 
-    public boolean existePorIngrediente(Long ingredienteId) {
-        Long quantidade = entityManager.createQuery(
-                        "SELECT COUNT(ri) FROM ReceitaIngrediente ri " +
-                                "WHERE ri.ingrediente.id = :ingredienteId",
-                        Long.class
-                )
-                .setParameter("ingredienteId", ingredienteId)
-                .getSingleResult();
-
-        return quantidade > 0;
-    }
 }

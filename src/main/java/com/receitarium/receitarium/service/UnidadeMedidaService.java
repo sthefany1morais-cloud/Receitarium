@@ -18,14 +18,25 @@ public class UnidadeMedidaService {
     @Transactional
     public UnidadeMedidaDTO salvar(UnidadeMedidaDTO dto) {
 
+        if (dto == null) {
+            throw new IllegalArgumentException("Dados da unidade são obrigatórios.");
+        }
+
+        if (dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new IllegalArgumentException("Nome da unidade é obrigatório.");
+        }
+
+        if (dto.getSigla() == null || dto.getSigla().isBlank()) {
+            throw new IllegalArgumentException("Sigla da unidade é obrigatória.");
+        }
+
         UnidadeMedida unidadeMedida =
                 UnidadeMedida.builder()
                         .nome(dto.getNome())
                         .sigla(dto.getSigla())
                         .build();
 
-        UnidadeMedida salva =
-                repository.salvar(unidadeMedida);
+        UnidadeMedida salva = repository.salvar(unidadeMedida);
 
         return converterParaDTO(salva);
     }
@@ -61,6 +72,18 @@ public class UnidadeMedidaService {
 
         if (existente == null) {
             return null;
+        }
+
+        if (dto == null) {
+            throw new IllegalArgumentException("Dados da unidade são obrigatórios.");
+        }
+
+        if (dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new IllegalArgumentException("Nome da unidade é obrigatório.");
+        }
+
+        if (dto.getSigla() == null || dto.getSigla().isBlank()) {
+            throw new IllegalArgumentException("Sigla da unidade é obrigatória.");
         }
 
         existente.setNome(dto.getNome());

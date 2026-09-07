@@ -5,6 +5,8 @@ import com.receitarium.receitarium.entity.Categoria;
 import com.receitarium.receitarium.entity.Ingrediente;
 import com.receitarium.receitarium.entity.Receita;
 import com.receitarium.receitarium.entity.ReceitaIngrediente;
+import com.receitarium.receitarium.repository.CategoriaRepository;
+import com.receitarium.receitarium.repository.IngredienteRepository;
 import com.receitarium.receitarium.repository.ReceitaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,10 +20,23 @@ import java.util.List;
 public class ReceitaService {
 
     private final ReceitaRepository receitaRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final IngredienteRepository ingredienteRepository;
 
 
     @Transactional
     public ReceitaDTO salvar(ReceitaDTO dto) {
+
+        for (ReceitaIngredienteDTO ingrediente : dto.getIngredientes()) {
+
+            if (ingrediente.getQuantidade() == null ||
+                    ingrediente.getQuantidade().signum() <= 0) {
+
+                throw new IllegalArgumentException(
+                        "A quantidade do ingrediente deve ser maior que zero."
+                );
+            }
+        }
 
         Receita receita = Receita.builder()
                 .nome(dto.getNome())
@@ -123,6 +138,7 @@ public class ReceitaService {
         existente.setCategorias(dto.getCategorias().stream()
                 .map(this::converterCategoriaParaEntidade)
                 .toList());
+
         existente.setIngredientes(dto.getIngredientes().stream()
                 .map(this::converterReceitaIngredienteParaEntidade)
                 .toList());
@@ -190,21 +206,33 @@ public class ReceitaService {
                 .build();
     }
 
-    private Categoria converterCategoriaParaEntidade(CategoriaDTO dto){
+    private Categoria converterCategoriaParaEntidade(CategoriaDTO dto) {
 
-        return Categoria.builder()
-                .id(dto.getId())
-                .nome(dto.getNome())
-                .build();
+        Categoria categoria =
+                categoriaRepository.buscarPorId(dto.getId());
+
+        if (categoria == null) {
+            throw new IllegalArgumentException(
+                    "Categoria não encontrada."
+            );
+        }
+
+        return categoria;
     }
 
-    private Ingrediente converterIngredienteParaEntidade(IngredienteDTO dto){
 
-        return Ingrediente.builder()
-                .id(dto.getId())
-                .nome(dto.getNome())
-                .build();
+    private Ingrediente converterIngredienteParaEntidade(IngredienteDTO dto) {
+
+        Ingrediente ingrediente = ingredienteRepository.buscarPorId(dto.getId());
+
+        if (ingrediente == null) {
+            throw new IllegalArgumentException("Ingrediente não encontrado.");
+        }
+
+        return ingrediente;
     }
+
+
     private ReceitaIngrediente converterReceitaIngredienteParaEntidade(ReceitaIngredienteDTO dto){
 
         return ReceitaIngrediente.builder()

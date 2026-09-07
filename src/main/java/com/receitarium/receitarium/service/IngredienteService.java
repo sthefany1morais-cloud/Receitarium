@@ -5,6 +5,8 @@ import com.receitarium.receitarium.dto.UnidadeMedidaDTO;
 import com.receitarium.receitarium.entity.Ingrediente;
 import com.receitarium.receitarium.entity.UnidadeMedida;
 import com.receitarium.receitarium.repository.IngredienteRepository;
+import com.receitarium.receitarium.repository.ReceitaIngredienteRepository;
+import com.receitarium.receitarium.repository.UnidadeMedidaRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +19,16 @@ import java.util.List;
 public class IngredienteService {
 
     private final IngredienteRepository ingredienteRepository;
+    private final ReceitaIngredienteRepository receitaIngredienteRepository;
+    private final UnidadeMedidaRepository unidadeMedidaRepository;
 
 
     @Transactional
     public IngredienteDTO salvar(IngredienteDTO dto) {
+
+        if (dto == null || dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new IllegalArgumentException("Nome do ingrediente é obrigatório.");
+        }
 
         Ingrediente existente = ingredienteRepository.buscarPorNome(dto.getNome());
 
@@ -72,7 +80,7 @@ public class IngredienteService {
         Ingrediente ingredienteHomonimo = ingredienteRepository.buscarPorNome(dto.getNome());
 
         if(ingredienteHomonimo != null && !ingredienteHomonimo.getId().equals(id)){
-            throw new RuntimeException("Ingrediente já existente");
+            throw new IllegalArgumentException("Ingrediente já existente.");
         }
 
         existente.setNome(dto.getNome());
@@ -96,8 +104,10 @@ public class IngredienteService {
             return false;
         }
 
-        if(ingredienteRepository.existePorIngrediente(id)){
-            throw new RuntimeException("Ingrediente não pode ser excluido");
+        if(receitaIngredienteRepository.existePorIngrediente(id)){
+            throw new IllegalStateException(
+                    "Ingrediente não pode ser excluído porque está sendo utilizado em uma receita."
+            );
         }
 
         ingredienteRepository.excluir(id);
@@ -105,19 +115,27 @@ public class IngredienteService {
     }
 
 
-    private IngredienteDTO converterParaDTO(Ingrediente ingrediente){
+    private IngredienteDTO converterParaDTO(Ingrediente ingrediente) {
 
         return IngredienteDTO.builder()
                 .id(ingrediente.getId())
                 .nome(ingrediente.getNome())
                 .unidadeMedida(
-                        converterUnidadeDeMedidaParaDTO(ingrediente.getUnidadeMedida()))
+                        ingrediente.getUnidadeMedida() != null
+                                ? converterUnidadeDeMedidaParaDTO(
+                                ingrediente.getUnidadeMedida())
+                                : null
+                )
                 .build();
     }
 
 
     private UnidadeMedidaDTO converterUnidadeDeMedidaParaDTO(
             UnidadeMedida unidadeMedida){
+
+        if (unidadeMedida == null) {
+            return null;
+        }
 
         return UnidadeMedidaDTO.builder()
                 .id(unidadeMedida.getId())
@@ -128,14 +146,24 @@ public class IngredienteService {
 
 
     private UnidadeMedida converterUnidadeDeMedidaParaEntidade(
-            UnidadeMedidaDTO dto){
+            UnidadeMedidaDTO dto) {
 
-        return UnidadeMedida.builder()
-                .id(dto.getId())
-                .nome(dto.getNome())
-                .sigla(dto.getSigla())
-                .build();
+        if (dto == null || dto.getId() == null) {
+            throw new IllegalArgumentException(
+                    "Unidade de medida é obrigatória."
+            );
+        }
+
+        UnidadeMedida unidadeMedida =
+                unidadeMedidaRepository.buscarPorId(dto.getId());
+
+        if (unidadeMedida == null) {
+            throw new IllegalArgumentException(
+                    "Unidade de medida não encontrada."
+            );
+        }
+
+        return unidadeMedida;
     }
-
 
 }
