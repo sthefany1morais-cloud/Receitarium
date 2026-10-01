@@ -23,7 +23,6 @@ public class ReceitaService {
     private final CategoriaRepository categoriaRepository;
     private final IngredienteRepository ingredienteRepository;
 
-
     @Transactional
     public ReceitaDTO salvar(ReceitaDTO dto) {
 
@@ -47,13 +46,15 @@ public class ReceitaService {
                         .toList())
                 .build();
 
-        List<ReceitaIngrediente> receitaIngredientes = dto.getIngredientes().stream()
-                .map(ingredienteDto -> {
-                    ReceitaIngrediente ri = converterReceitaIngredienteParaEntidade(ingredienteDto);
-                    ri.setReceita(receita);
-                    return ri;
-                })
-                .toList();
+        List<ReceitaIngrediente> receitaIngredientes = new ArrayList<>(
+                dto.getIngredientes().stream()
+                        .map(ingredienteDto -> {
+                            ReceitaIngrediente ri = converterReceitaIngredienteParaEntidade(ingredienteDto);
+                            ri.setReceita(receita);
+                            return ri;
+                        })
+                        .toList()
+        );
 
         receita.setIngredientes(receitaIngredientes);
 
@@ -140,16 +141,32 @@ public class ReceitaService {
         existente.setTempoPreparo(dto.getTempoPreparo());
         existente.setRendimento(dto.getRendimento());
         existente.setModoPreparo(dto.getModoPreparo());
+
         existente.setCategorias(dto.getCategorias().stream()
                 .map(this::converterCategoriaParaEntidade)
                 .toList());
 
-        existente.setIngredientes(dto.getIngredientes().stream()
-                .map(this::converterReceitaIngredienteParaEntidade)
-                .toList());
+        List<ReceitaIngrediente> novosIngredientes = dto.getIngredientes().stream()
+                .map(ingredienteDto -> {
+                    ReceitaIngrediente ri = converterReceitaIngredienteParaEntidade(ingredienteDto);
+                    ri.setReceita(existente);
+                    return ri;
+                })
+                .toList();
+
+        if (existente.getIngredientes() == null) {
+            existente.setIngredientes(new ArrayList<>());
+        } else {
+            try {
+                existente.getIngredientes().clear();
+            } catch (UnsupportedOperationException e) {
+                existente.setIngredientes(new ArrayList<>());
+            }
+        }
+
+        existente.getIngredientes().addAll(novosIngredientes);
 
         Receita atuizada = receitaRepository.atualizar(existente);
-
         return converterParaDTO(atuizada);
     }
 
