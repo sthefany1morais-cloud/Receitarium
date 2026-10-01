@@ -15,7 +15,6 @@ public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
 
-
     @Transactional
     public CategoriaDTO salvar(CategoriaDTO dto) {
 
@@ -35,7 +34,6 @@ public class CategoriaService {
         return converterParaDTO(salvo);
     }
 
-
     public CategoriaDTO buscarPorId(Long id) {
 
         Categoria categoria = categoriaRepository.buscarPorId(id);
@@ -53,7 +51,6 @@ public class CategoriaService {
                 .map(this::converterParaDTO)
                 .toList();
     }
-
 
     @Transactional
     public CategoriaDTO atualizar(CategoriaDTO dto, Long id) {
@@ -77,7 +74,6 @@ public class CategoriaService {
         return converterParaDTO(atualizado);
     }
 
-
     @Transactional
     public boolean excluir(Long id) {
 
@@ -94,7 +90,6 @@ public class CategoriaService {
         categoriaRepository.excluir(id);
         return true;
     }
-
 
     private CategoriaDTO converterParaDTO(Categoria categoria){
 

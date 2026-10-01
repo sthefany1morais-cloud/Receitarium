@@ -75,8 +75,7 @@ public class ReceitaIngredienteController {
     @Operation(summary = "Atualizar vínculo de ingrediente em receita")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Vínculo atualizado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Ingrediente ausente ou quantidade 
-inválida"),
+            @ApiResponse(responseCode = "400", description = "Ingrediente ausente ou quantidade inválida"),
             @ApiResponse(responseCode = "404", description = "Vínculo não encontrado")
     })
     @PutMapping("/{id}")
