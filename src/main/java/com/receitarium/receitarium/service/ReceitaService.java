@@ -28,10 +28,8 @@ public class ReceitaService {
     public ReceitaDTO salvar(ReceitaDTO dto) {
 
         for (ReceitaIngredienteDTO ingrediente : dto.getIngredientes()) {
-
             if (ingrediente.getQuantidade() == null ||
                     ingrediente.getQuantidade().signum() <= 0) {
-
                 throw new IllegalArgumentException(
                         "A quantidade do ingrediente deve ser maior que zero."
                 );
@@ -47,10 +45,17 @@ public class ReceitaService {
                 .categorias(dto.getCategorias().stream()
                         .map(this::converterCategoriaParaEntidade)
                         .toList())
-                .ingredientes(dto.getIngredientes().stream()
-                        .map(this::converterReceitaIngredienteParaEntidade)
-                        .toList())
                 .build();
+
+        List<ReceitaIngrediente> receitaIngredientes = dto.getIngredientes().stream()
+                .map(ingredienteDto -> {
+                    ReceitaIngrediente ri = converterReceitaIngredienteParaEntidade(ingredienteDto);
+                    ri.setReceita(receita);
+                    return ri;
+                })
+                .toList();
+
+        receita.setIngredientes(receitaIngredientes);
 
         Receita salva = receitaRepository.salvar(receita);
         return converterParaDTO(salva);
@@ -122,11 +127,11 @@ public class ReceitaService {
     }
 
     @Transactional
-    public ReceitaDTO atualizar(ReceitaDTO dto, Long id){
+    public ReceitaDTO atualizar(ReceitaDTO dto, Long id) {
 
         Receita existente = receitaRepository.buscarPorId(id);
 
-        if(existente == null){
+        if (existente == null) {
             return null;
         }
 
@@ -153,7 +158,7 @@ public class ReceitaService {
 
         Receita receita = receitaRepository.buscarPorId(id);
 
-        if(receita == null){
+        if (receita == null) {
             return false;
         }
 
@@ -162,7 +167,6 @@ public class ReceitaService {
     }
 
     private ReceitaDTO converterParaDTO(Receita receita) {
-
         return ReceitaDTO.builder()
                 .id(receita.getId())
                 .nome(receita.getNome())
@@ -172,8 +176,8 @@ public class ReceitaService {
                 .modoPreparo(receita.getModoPreparo())
                 .categorias(
                         receita.getCategorias().stream()
-                        .map(this::converterCategoriaParaDTO)
-                        .toList()
+                                .map(this::converterCategoriaParaDTO)
+                                .toList()
                 )
                 .ingredientes(receita.getIngredientes().stream()
                         .map(this::converterReceitaIngredienteParaDTO)
@@ -182,7 +186,6 @@ public class ReceitaService {
     }
 
     private CategoriaDTO converterCategoriaParaDTO(Categoria categoria) {
-
         return CategoriaDTO.builder()
                 .id(categoria.getId())
                 .nome(categoria.getNome())
@@ -192,53 +195,60 @@ public class ReceitaService {
     private ReceitaIngredienteDTO converterReceitaIngredienteParaDTO(
             ReceitaIngrediente receitaIngrediente) {
 
+        UnidadeMedidaDTO unidadeDTO = null;
+        if (receitaIngrediente.getIngrediente() != null && receitaIngrediente.getIngrediente().getUnidadeMedida() != null) {
+            unidadeDTO = UnidadeMedidaDTO.builder()
+                    .id(receitaIngrediente.getIngrediente().getUnidadeMedida().getId())
+                    .nome(receitaIngrediente.getIngrediente().getUnidadeMedida().getNome())
+                    .sigla(receitaIngrediente.getIngrediente().getUnidadeMedida().getSigla())
+                    .build();
+        }
+
         return ReceitaIngredienteDTO.builder()
                 .ingrediente(converterIngredienteParaDTO(receitaIngrediente.getIngrediente()))
                 .quantidade(receitaIngrediente.getQuantidade())
+                .unidadeMedida(unidadeDTO)
                 .build();
     }
 
     private IngredienteDTO converterIngredienteParaDTO(Ingrediente ingrediente) {
+        UnidadeMedidaDTO unidadeDTO = null;
+        if (ingrediente.getUnidadeMedida() != null) {
+            unidadeDTO = UnidadeMedidaDTO.builder()
+                    .id(ingrediente.getUnidadeMedida().getId())
+                    .nome(ingrediente.getUnidadeMedida().getNome())
+                    .sigla(ingrediente.getUnidadeMedida().getSigla())
+                    .build();
+        }
 
         return IngredienteDTO.builder()
                 .id(ingrediente.getId())
                 .nome(ingrediente.getNome())
+                .unidadeMedida(unidadeDTO)
                 .build();
     }
 
     private Categoria converterCategoriaParaEntidade(CategoriaDTO dto) {
-
-        Categoria categoria =
-                categoriaRepository.buscarPorId(dto.getId());
-
+        Categoria categoria = categoriaRepository.buscarPorId(dto.getId());
         if (categoria == null) {
-            throw new IllegalArgumentException(
-                    "Categoria não encontrada."
-            );
+            throw new IllegalArgumentException("Categoria não encontrada.");
         }
-
         return categoria;
     }
 
-
     private Ingrediente converterIngredienteParaEntidade(IngredienteDTO dto) {
-
         Ingrediente ingrediente = ingredienteRepository.buscarPorId(dto.getId());
-
         if (ingrediente == null) {
             throw new IllegalArgumentException("Ingrediente não encontrado.");
         }
-
         return ingrediente;
     }
 
-
-    private ReceitaIngrediente converterReceitaIngredienteParaEntidade(ReceitaIngredienteDTO dto){
-
+    private ReceitaIngrediente converterReceitaIngredienteParaEntidade(ReceitaIngredienteDTO dto) {
         return ReceitaIngrediente.builder()
                 .ingrediente(converterIngredienteParaEntidade(dto.getIngrediente()))
                 .quantidade(dto.getQuantidade())
+
                 .build();
     }
-
 }
