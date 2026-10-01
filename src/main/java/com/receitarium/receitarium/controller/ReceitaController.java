@@ -82,39 +82,18 @@ public class ReceitaController {
     @Operation(summary = "Gerar lista de compras a partir de receitas selecionadas")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista de compras gerada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Nenhum id informado"),
-            @ApiResponse(responseCode = "404", description = "Alguma das receitas informadas não existe")
+            @ApiResponse(responseCode = "400", description = "Nenhum dado informado")
     })
     @PostMapping("/lista-compras")
     public ResponseEntity<List<ListaComprasDTO>> gerarListaDeCompras(
-            @RequestBody List<Long> idsDasReceitas
+            @RequestBody List<ReceitaDTO> receitas // Recebe a receita completa direto do Swagger
     ) {
-        if (idsDasReceitas == null || idsDasReceitas.isEmpty()) {
+        if (receitas == null || receitas.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-
-        List<ReceitaDTO> receitas = new ArrayList<>();
-
-        for (Long id : idsDasReceitas) {
-
-            ReceitaDTO receita = service.buscarPorId(id);
-
-            if (receita == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            receitas.add(receita);
-        }
-
         return ResponseEntity.ok(service.gerarListaDeCompras(receitas));
     }
 
-    @Operation(summary = "Atualizar receita")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Receita atualizada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
-            @ApiResponse(responseCode = "404", description = "Receita não encontrada")
-    })
     @PutMapping("/{id}")
     public ResponseEntity<ReceitaDTO> atualizar(
             @Parameter(description = "ID da receita", example = "1")
