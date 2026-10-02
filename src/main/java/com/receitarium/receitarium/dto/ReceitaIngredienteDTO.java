@@ -13,6 +13,12 @@ import java.math.BigDecimal;
 @Schema(description = "Ingrediente utilizado em uma receita, com sua quantidade e unidade de medida")
 public class ReceitaIngredienteDTO {
 
+
+    @Schema(
+            description = "ID do vínculo entre receita e ingrediente", example = "1"
+    )
+    private Long id;
+
     @Schema(
             description = "ID da receita", example = "1"
     )

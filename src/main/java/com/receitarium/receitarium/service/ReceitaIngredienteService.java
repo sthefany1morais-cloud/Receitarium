@@ -225,6 +225,7 @@ public class ReceitaIngredienteService {
         }
 
         return ReceitaIngredienteDTO.builder()
+                .id(receitaIngrediente.getId())
                 .receitaId(
                         receitaIngrediente.getReceita() != null
                                 ? receitaIngrediente

@@ -4,6 +4,7 @@ import com.receitarium.receitarium.dto.*;
 import com.receitarium.receitarium.entity.*;
 import com.receitarium.receitarium.repository.CategoriaRepository;
 import com.receitarium.receitarium.repository.IngredienteRepository;
+import com.receitarium.receitarium.repository.ReceitaIngredienteRepository;
 import com.receitarium.receitarium.repository.ReceitaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class ReceitaService {
     private final ReceitaRepository receitaRepository;
     private final CategoriaRepository categoriaRepository;
     private final IngredienteRepository ingredienteRepository;
+    private final ReceitaIngredienteRepository receitaIngredienteRepository;
 
     @Transactional
     public ReceitaDTO salvar(ReceitaDTO dto) {
@@ -230,6 +232,8 @@ public class ReceitaService {
                         .toList()
         );
 
+        receitaIngredienteRepository.excluirPorReceita(id);
+
         List<ReceitaIngrediente> novosIngredientes =
                 new ArrayList<>();
 
@@ -260,10 +264,12 @@ public class ReceitaService {
         existente.getIngredientes().clear();
         existente.getIngredientes().addAll(novosIngredientes);
 
-        Receita atualizada = receitaRepository.atualizar(existente);
+        Receita atualizada =
+                receitaRepository.atualizar(existente);
 
         return converterParaDTO(atualizada);
     }
+
 
     @Transactional
     public boolean excluir(Long id) {
@@ -347,6 +353,7 @@ public class ReceitaService {
         }
 
         return ReceitaIngredienteDTO.builder()
+                .receitaId(receitaIngrediente.getReceita().getId())
                 .ingrediente(
                         converterIngredienteParaDTO(
                                 receitaIngrediente.getIngrediente()
@@ -356,7 +363,6 @@ public class ReceitaService {
                 .unidadeMedida(unidadeDTO)
                 .build();
     }
-
     private IngredienteDTO converterIngredienteParaDTO(
             Ingrediente ingrediente) {
 

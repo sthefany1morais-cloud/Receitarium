@@ -67,6 +67,18 @@ public class ReceitaIngredienteRepository {
         return entityManager.merge(receitaIngrediente);
     }
 
+    public void excluirPorReceita(Long receitaId) {
+
+        List<ReceitaIngrediente> ingredientes =
+                buscarPorReceita(receitaId);
+
+        for (ReceitaIngrediente ingrediente : ingredientes) {
+            entityManager.remove(ingrediente);
+        }
+
+        entityManager.flush();
+    }
+
     public void excluir(Long id) {
 
         ReceitaIngrediente receitaIngrediente =
