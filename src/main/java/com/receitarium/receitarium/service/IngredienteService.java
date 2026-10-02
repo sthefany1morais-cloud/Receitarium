@@ -148,22 +148,27 @@ public class IngredienteService {
     private UnidadeMedida converterUnidadeDeMedidaParaEntidade(
             UnidadeMedidaDTO dto) {
 
-        if (dto == null || dto.getId() == null) {
+        if (dto == null) {
             throw new IllegalArgumentException(
                     "Unidade de medida é obrigatória."
             );
         }
 
-        UnidadeMedida unidadeMedida =
-                unidadeMedidaRepository.buscarPorId(dto.getId());
-
-        if (unidadeMedida == null) {
-            throw new IllegalArgumentException(
-                    "Unidade de medida não encontrada."
-            );
+        if (dto.getId() != null) {
+            UnidadeMedida unidadeMedida = unidadeMedidaRepository.buscarPorId(dto.getId());
+            if (unidadeMedida != null) {
+                if (dto.getNome() != null) unidadeMedida.setNome(dto.getNome());
+                if (dto.getSigla() != null) unidadeMedida.setSigla(dto.getSigla());
+                return unidadeMedida;
+            }
         }
 
-        return unidadeMedida;
+        return UnidadeMedida.builder()
+                .id(dto.getId())
+                .nome(dto.getNome())
+                .sigla(dto.getSigla())
+                .build();
     }
+
 
 }
