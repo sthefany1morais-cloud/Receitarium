@@ -19,18 +19,16 @@ public class Receita {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false)
     private String nome;
 
-    @Column(columnDefinition = "TEXT")
     private String descricao;
 
-    @Column(name = "tempo_preparo")
     private Integer tempoPreparo;
 
     private Integer rendimento;
 
-    @Column(name = "modo_preparo", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String modoPreparo;
 
     @ManyToMany
@@ -42,9 +40,11 @@ public class Receita {
     @Builder.Default
     private List<Categoria> categorias = new ArrayList<>();
 
-    @OneToMany(mappedBy = "receita")
+    @OneToMany(
+            mappedBy = "receita",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @Builder.Default
     private List<ReceitaIngrediente> ingredientes = new ArrayList<>();
-
-
 }

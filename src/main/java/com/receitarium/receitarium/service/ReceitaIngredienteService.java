@@ -4,13 +4,14 @@ import com.receitarium.receitarium.dto.IngredienteDTO;
 import com.receitarium.receitarium.dto.ReceitaIngredienteDTO;
 import com.receitarium.receitarium.dto.UnidadeMedidaDTO;
 import com.receitarium.receitarium.entity.Ingrediente;
+import com.receitarium.receitarium.entity.Receita;
 import com.receitarium.receitarium.entity.ReceitaIngrediente;
-import com.receitarium.receitarium.entity.UnidadeMedida;
 import com.receitarium.receitarium.repository.IngredienteRepository;
 import com.receitarium.receitarium.repository.ReceitaIngredienteRepository;
-import jakarta.transaction.Transactional;
+import com.receitarium.receitarium.repository.ReceitaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,40 +19,80 @@ import java.util.List;
 @Service
 public class ReceitaIngredienteService {
 
-    private final ReceitaIngredienteRepository receitaIngredienteRepository;
+    private final ReceitaIngredienteRepository repository;
     private final IngredienteRepository ingredienteRepository;
-
+    private final ReceitaRepository receitaRepository;
 
     @Transactional
-    public ReceitaIngredienteDTO salvar(ReceitaIngredienteDTO dto) {
+    public ReceitaIngredienteDTO salvar(
+            ReceitaIngredienteDTO dto) {
 
-        if(dto == null || dto.getIngrediente() == null) {
-            throw new IllegalArgumentException("Ingrediente não pode ser nulo.");
+        if (dto == null) {
+            throw new IllegalArgumentException(
+                    "Dados do ingrediente da receita não informados."
+            );
         }
 
-        if(dto.getQuantidade() == null || dto.getQuantidade().signum() <= 0) {
-            throw new IllegalArgumentException("Quantidade não pode ser nula.");
+        if (dto.getReceitaId() == null) {
+            throw new IllegalArgumentException(
+                    "A receita deve ser informada."
+            );
         }
 
-        Ingrediente ingrediente = converterParaEntidade(dto.getIngrediente());
+        if (dto.getIngrediente() == null ||
+                dto.getIngrediente().getId() == null) {
 
-        ReceitaIngrediente receitaIngrediente = ReceitaIngrediente.builder()
-                .ingrediente(ingrediente)
-                .quantidade(dto.getQuantidade())
-                .build();
+            throw new IllegalArgumentException(
+                    "O ingrediente deve ser informado."
+            );
+        }
 
-        ReceitaIngrediente salva = receitaIngredienteRepository.salvar(receitaIngrediente);
+        if (dto.getQuantidade() == null ||
+                dto.getQuantidade().signum() <= 0) {
 
-        return converterParaDTO(salva);
+            throw new IllegalArgumentException(
+                    "A quantidade deve ser maior que zero."
+            );
+        }
+
+        Receita receita =
+                receitaRepository.buscarPorId(dto.getReceitaId());
+
+        if (receita == null) {
+            throw new IllegalArgumentException(
+                    "Receita não encontrada."
+            );
+        }
+
+        Ingrediente ingrediente =
+                ingredienteRepository.buscarPorId(
+                        dto.getIngrediente().getId()
+                );
+
+        if (ingrediente == null) {
+            throw new IllegalArgumentException(
+                    "Ingrediente não encontrado."
+            );
+        }
+
+        ReceitaIngrediente receitaIngrediente =
+                ReceitaIngrediente.builder()
+                        .receita(receita)
+                        .ingrediente(ingrediente)
+                        .quantidade(dto.getQuantidade())
+                        .build();
+
+        ReceitaIngrediente salvo =
+                repository.salvar(receitaIngrediente);
+
+        return converterParaDTO(salvo);
     }
 
+    @Transactional(readOnly = true)
     public ReceitaIngredienteDTO buscarPorId(Long id) {
 
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException("ID inválido.");
-        }
-
-        ReceitaIngrediente receitaIngrediente = receitaIngredienteRepository.buscarPorId(id);
+        ReceitaIngrediente receitaIngrediente =
+                repository.buscarPorId(id);
 
         if (receitaIngrediente == null) {
             return null;
@@ -60,88 +101,65 @@ public class ReceitaIngredienteService {
         return converterParaDTO(receitaIngrediente);
     }
 
+    @Transactional(readOnly = true)
     public List<ReceitaIngredienteDTO> listarTodos() {
-        return receitaIngredienteRepository.listarTodos()
+
+        return repository.listarTodos()
+                .stream()
+                .map(this::converterParaDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReceitaIngredienteDTO> buscarPorReceita(
+            Long receitaId) {
+
+        return repository.buscarPorReceita(receitaId)
                 .stream()
                 .map(this::converterParaDTO)
                 .toList();
     }
 
     @Transactional
-    public ReceitaIngredienteDTO atualizar(Long id, ReceitaIngredienteDTO dto) {
+    public ReceitaIngredienteDTO atualizar(
+            Long id,
+            ReceitaIngredienteDTO dto) {
 
-        ReceitaIngrediente existente = receitaIngredienteRepository.buscarPorId(id);
+        ReceitaIngrediente existente =
+                repository.buscarPorId(id);
 
         if (existente == null) {
             return null;
         }
 
-        if(dto == null || dto.getIngrediente() == null) {
-            throw new IllegalArgumentException("Ingrediente não pode ser nulo.");
-        }
+        if (dto.getReceitaId() != null) {
 
-        if(dto.getQuantidade() == null || dto.getQuantidade().signum() <= 0) {
-            throw new IllegalArgumentException("Quantidade não pode ser nula.");
-        }
+            Receita receita =
+                    receitaRepository.buscarPorId(
+                            dto.getReceitaId()
+                    );
 
-        Ingrediente ingrediente = converterParaEntidade(dto.getIngrediente());
-
-        existente.setQuantidade(dto.getQuantidade());
-        existente.setIngrediente(ingrediente);
-
-        ReceitaIngrediente atualizada = receitaIngredienteRepository.atualizar(existente);
-
-        return converterParaDTO(atualizada);
-    }
-
-    @Transactional
-    public boolean excluir(Long id) {
-        ReceitaIngrediente existente = receitaIngredienteRepository.buscarPorId(id);
-
-        if (existente == null) {
-            return false;
-        }
-
-        receitaIngredienteRepository.excluir(id);
-        return true;
-    }
-
-    private ReceitaIngredienteDTO converterParaDTO(ReceitaIngrediente receitaIngrediente) {
-        Ingrediente ingrediente = receitaIngrediente.getIngrediente();
-        UnidadeMedida unidadeMedida = ingrediente != null ? ingrediente.getUnidadeMedida() : null;
-
-        IngredienteDTO ingredienteDTO = null;
-        if (ingrediente != null) {
-            UnidadeMedidaDTO unidadeMedidaDTO = null;
-            if (unidadeMedida != null) {
-                unidadeMedidaDTO = UnidadeMedidaDTO.builder()
-                        .id(unidadeMedida.getId())
-                        .nome(unidadeMedida.getNome())
-                        .sigla(unidadeMedida.getSigla())
-                        .build();
+            if (receita == null) {
+                throw new IllegalArgumentException(
+                        "Receita não encontrada."
+                );
             }
 
-            ingredienteDTO = IngredienteDTO.builder()
-                    .id(ingrediente.getId())
-                    .nome(ingrediente.getNome())
-                    .unidadeMedida(unidadeMedidaDTO)
-                    .build();
+            existente.setReceita(receita);
         }
 
-        return ReceitaIngredienteDTO.builder()
-                .ingrediente(ingredienteDTO)
-                .quantidade(receitaIngrediente.getQuantidade())
-                .build();
-    }
+        if (dto.getIngrediente() == null ||
+                dto.getIngrediente().getId() == null) {
 
-    private Ingrediente converterParaEntidade(IngredienteDTO dto) {
-
-        if (dto == null || dto.getId() == null) {
-            return null;
+            throw new IllegalArgumentException(
+                    "O ingrediente deve ser informado."
+            );
         }
 
         Ingrediente ingrediente =
-                ingredienteRepository.buscarPorId(dto.getId());
+                ingredienteRepository.buscarPorId(
+                        dto.getIngrediente().getId()
+                );
 
         if (ingrediente == null) {
             throw new IllegalArgumentException(
@@ -149,6 +167,105 @@ public class ReceitaIngredienteService {
             );
         }
 
-        return ingrediente;
+        if (dto.getQuantidade() == null ||
+                dto.getQuantidade().signum() <= 0) {
+
+            throw new IllegalArgumentException(
+                    "A quantidade deve ser maior que zero."
+            );
+        }
+
+        existente.setIngrediente(ingrediente);
+        existente.setQuantidade(dto.getQuantidade());
+
+        ReceitaIngrediente atualizado =
+                repository.atualizar(existente);
+
+        return converterParaDTO(atualizado);
+    }
+
+    @Transactional
+    public boolean excluir(Long id) {
+
+        ReceitaIngrediente existente =
+                repository.buscarPorId(id);
+
+        if (existente == null) {
+            return false;
+        }
+
+        repository.excluir(id);
+
+        return true;
+    }
+
+    private ReceitaIngredienteDTO converterParaDTO(
+            ReceitaIngrediente receitaIngrediente) {
+
+        UnidadeMedidaDTO unidadeDTO = null;
+
+        if (receitaIngrediente.getIngrediente() != null &&
+                receitaIngrediente.getIngrediente()
+                        .getUnidadeMedida() != null) {
+
+            unidadeDTO = UnidadeMedidaDTO.builder()
+                    .id(
+                            receitaIngrediente.getIngrediente()
+                                    .getUnidadeMedida().getId()
+                    )
+                    .nome(
+                            receitaIngrediente.getIngrediente()
+                                    .getUnidadeMedida().getNome()
+                    )
+                    .sigla(
+                            receitaIngrediente.getIngrediente()
+                                    .getUnidadeMedida().getSigla()
+                    )
+                    .build();
+        }
+
+        return ReceitaIngredienteDTO.builder()
+                .receitaId(
+                        receitaIngrediente.getReceita() != null
+                                ? receitaIngrediente
+                                .getReceita()
+                                .getId()
+                                : null
+                )
+                .ingrediente(
+                        converterIngredienteParaDTO(
+                                receitaIngrediente.getIngrediente()
+                        )
+                )
+                .quantidade(
+                        receitaIngrediente.getQuantidade()
+                )
+                .unidadeMedida(unidadeDTO)
+                .build();
+    }
+
+    private IngredienteDTO converterIngredienteParaDTO(
+            Ingrediente ingrediente) {
+
+        if (ingrediente == null) {
+            return null;
+        }
+
+        UnidadeMedidaDTO unidadeDTO = null;
+
+        if (ingrediente.getUnidadeMedida() != null) {
+
+            unidadeDTO = UnidadeMedidaDTO.builder()
+                    .id(ingrediente.getUnidadeMedida().getId())
+                    .nome(ingrediente.getUnidadeMedida().getNome())
+                    .sigla(ingrediente.getUnidadeMedida().getSigla())
+                    .build();
+        }
+
+        return IngredienteDTO.builder()
+                .id(ingrediente.getId())
+                .nome(ingrediente.getNome())
+                .unidadeMedida(unidadeDTO)
+                .build();
     }
 }

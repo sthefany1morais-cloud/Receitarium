@@ -79,21 +79,35 @@ public class ReceitaController {
         return ResponseEntity.ok(service.buscarPorCategoria(categoriaId));
     }
 
-    @Operation(summary = "Gerar lista de compras a partir de receitas selecionadas")
+    @Operation(
+            summary = "Gerar lista de compras a partir de receitas selecionadas"
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista de compras gerada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Nenhum dado informado")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de compras gerada com sucesso"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Nenhum ID de receita informado"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Uma ou mais receitas não foram encontradas"
+            )
     })
     @PostMapping("/lista-compras")
     public ResponseEntity<List<ListaComprasDTO>> gerarListaDeCompras(
-            @RequestBody List<ReceitaDTO> receitas // Recebe a receita completa direto do Swagger
+            @RequestBody List<Long> receitaIds
     ) {
-        if (receitas == null || receitas.isEmpty()) {
+        if (receitaIds == null || receitaIds.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(service.gerarListaDeCompras(receitas));
-    }
 
+        return ResponseEntity.ok(
+                service.gerarListaDeCompras(receitaIds)
+        );
+    }
     @PutMapping("/{id}")
     public ResponseEntity<ReceitaDTO> atualizar(
             @Parameter(description = "ID da receita", example = "1")

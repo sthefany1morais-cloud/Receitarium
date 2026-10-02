@@ -14,6 +14,11 @@ import java.math.BigDecimal;
 public class ReceitaIngredienteDTO {
 
     @Schema(
+            description = "ID da receita", example = "1"
+    )
+    private Long receitaId;
+
+    @Schema(
             description = "Ingrediente utilizado na receita"
     )
     private IngredienteDTO ingrediente;

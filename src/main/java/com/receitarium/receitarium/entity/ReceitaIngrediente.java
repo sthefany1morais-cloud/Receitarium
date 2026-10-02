@@ -10,7 +10,6 @@ import java.math.BigDecimal;
         name = "receita_ingrediente",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_receita_ingrediente",
                         columnNames = {"receita_id", "ingrediente_id"}
                 )
         }

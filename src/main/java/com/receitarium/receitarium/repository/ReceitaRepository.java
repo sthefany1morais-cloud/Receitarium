@@ -19,30 +19,28 @@ public class ReceitaRepository {
     }
 
     public Receita buscarPorId(Long id) {
-        return entityManager.find(
-                Receita.class,
-                id
-        );
+        return entityManager.find(Receita.class, id);
     }
 
     public List<Receita> listarTodas() {
-        return entityManager
-                .createQuery(
-                        "SELECT r FROM Receita r",
-                        Receita.class
-                )
-                .getResultList();
+        return entityManager.createQuery(
+                "SELECT DISTINCT r FROM Receita r " +
+                        "LEFT JOIN FETCH r.ingredientes ri " +
+                        "LEFT JOIN FETCH ri.ingrediente i " +
+                        "LEFT JOIN FETCH i.unidadeMedida",
+                Receita.class
+        ).getResultList();
     }
 
     public List<Receita> buscarPorCategoria(Long categoriaId) {
-        return entityManager
-                .createQuery(
-                        """
-                        SELECT DISTINCT r
-                        FROM Receita r
-                        JOIN r.categorias c
-                        WHERE c.id = :categoriaId
-                        """,
+        return entityManager.createQuery(
+                        "SELECT DISTINCT r " +
+                                "FROM Receita r " +
+                                "JOIN r.categorias c " +
+                                "LEFT JOIN FETCH r.ingredientes ri " +
+                                "LEFT JOIN FETCH ri.ingrediente i " +
+                                "LEFT JOIN FETCH i.unidadeMedida " +
+                                "WHERE c.id = :categoriaId",
                         Receita.class
                 )
                 .setParameter("categoriaId", categoriaId)
@@ -54,15 +52,10 @@ public class ReceitaRepository {
     }
 
     public void excluir(Long id) {
-        Receita receita =
-                entityManager.find(
-                        Receita.class,
-                        id
-                );
+        Receita receita = buscarPorId(id);
 
         if (receita != null) {
             entityManager.remove(receita);
         }
     }
-
 }

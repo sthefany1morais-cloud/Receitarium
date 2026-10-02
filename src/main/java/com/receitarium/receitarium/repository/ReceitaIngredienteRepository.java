@@ -1,6 +1,5 @@
 package com.receitarium.receitarium.repository;
 
-import com.receitarium.receitarium.entity.Receita;
 import com.receitarium.receitarium.entity.ReceitaIngrediente;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -14,39 +13,34 @@ public class ReceitaIngredienteRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public ReceitaIngrediente salvar(
-            ReceitaIngrediente receitaIngrediente
-    ) {
+    public ReceitaIngrediente salvar(ReceitaIngrediente receitaIngrediente) {
         entityManager.persist(receitaIngrediente);
         return receitaIngrediente;
     }
 
     public ReceitaIngrediente buscarPorId(Long id) {
-        return entityManager.find(
-                ReceitaIngrediente.class,
-                id
-        );
+        return entityManager.find(ReceitaIngrediente.class, id);
     }
 
     public List<ReceitaIngrediente> listarTodos() {
-        return entityManager
-                .createQuery(
-                        "SELECT ri FROM ReceitaIngrediente ri",
-                        ReceitaIngrediente.class
-                )
-                .getResultList();
+
+        return entityManager.createQuery(
+                "SELECT ri " +
+                        "FROM ReceitaIngrediente ri " +
+                        "JOIN FETCH ri.ingrediente i " +
+                        "JOIN FETCH i.unidadeMedida",
+                ReceitaIngrediente.class
+        ).getResultList();
     }
 
     public List<ReceitaIngrediente> buscarPorReceita(Long receitaId) {
-        return entityManager
-                .createQuery(
-                        """
-                        SELECT ri
-                        FROM ReceitaIngrediente ri
-                        JOIN FETCH ri.ingrediente i
-                        JOIN FETCH i.unidadeMedida
-                        WHERE ri.receita.id = :receitaId
-                        """,
+
+        return entityManager.createQuery(
+                        "SELECT ri " +
+                                "FROM ReceitaIngrediente ri " +
+                                "JOIN FETCH ri.ingrediente i " +
+                                "JOIN FETCH i.unidadeMedida " +
+                                "WHERE ri.receita.id = :receitaId",
                         ReceitaIngrediente.class
                 )
                 .setParameter("receitaId", receitaId)
@@ -54,16 +48,13 @@ public class ReceitaIngredienteRepository {
     }
 
     public List<ReceitaIngrediente> buscarPorIngrediente(
-            Long ingredienteId
-    ) {
-        return entityManager
-                .createQuery(
-                        """
-                        SELECT ri
-                        FROM ReceitaIngrediente ri
-                        JOIN FETCH ri.receita
-                        WHERE ri.ingrediente.id = :ingredienteId
-                        """,
+            Long ingredienteId) {
+
+        return entityManager.createQuery(
+                        "SELECT ri " +
+                                "FROM ReceitaIngrediente ri " +
+                                "JOIN FETCH ri.receita " +
+                                "WHERE ri.ingrediente.id = :ingredienteId",
                         ReceitaIngrediente.class
                 )
                 .setParameter("ingredienteId", ingredienteId)
@@ -71,17 +62,15 @@ public class ReceitaIngredienteRepository {
     }
 
     public ReceitaIngrediente atualizar(
-            ReceitaIngrediente receitaIngrediente
-    ) {
+            ReceitaIngrediente receitaIngrediente) {
+
         return entityManager.merge(receitaIngrediente);
     }
 
     public void excluir(Long id) {
+
         ReceitaIngrediente receitaIngrediente =
-                entityManager.find(
-                        ReceitaIngrediente.class,
-                        id
-                );
+                buscarPorId(id);
 
         if (receitaIngrediente != null) {
             entityManager.remove(receitaIngrediente);
@@ -89,8 +78,10 @@ public class ReceitaIngredienteRepository {
     }
 
     public boolean existePorIngrediente(Long ingredienteId) {
+
         Long quantidade = entityManager.createQuery(
-                        "SELECT COUNT(ri) FROM ReceitaIngrediente ri " +
+                        "SELECT COUNT(ri) " +
+                                "FROM ReceitaIngrediente ri " +
                                 "WHERE ri.ingrediente.id = :ingredienteId",
                         Long.class
                 )
