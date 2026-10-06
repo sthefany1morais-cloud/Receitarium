@@ -3,9 +3,9 @@ package com.receitarium.receitarium.service;
 import com.receitarium.receitarium.dto.CategoriaDTO;
 import com.receitarium.receitarium.entity.Categoria;
 import com.receitarium.receitarium.repository.CategoriaRepository;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -35,6 +35,7 @@ public class CategoriaService {
         return converterParaDTO(salvo);
     }
 
+    @Transactional(readOnly = true)
     public CategoriaDTO buscarPorId(Long id) {
 
         Categoria categoria = categoriaRepository.buscarPorId(id);
@@ -45,6 +46,8 @@ public class CategoriaService {
 
         return converterParaDTO(categoria);
     }
+
+    @Transactional(readOnly = true)
     public List<CategoriaDTO> listarTodas() {
 
         return categoriaRepository.listarTodas()

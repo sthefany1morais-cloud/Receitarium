@@ -48,6 +48,7 @@ public class IngredienteService {
     }
 
 
+    @Transactional(readOnly = true)
     public IngredienteDTO buscarPorId(Long id) {
 
         Ingrediente ingrediente = ingredienteRepository.buscarPorId(id);
@@ -59,6 +60,8 @@ public class IngredienteService {
         return converterParaDTO(ingrediente);
     }
 
+
+    @Transactional(readOnly = true)
     public List<IngredienteDTO> listarTodas() {
 
         return ingredienteRepository.listarTodas()

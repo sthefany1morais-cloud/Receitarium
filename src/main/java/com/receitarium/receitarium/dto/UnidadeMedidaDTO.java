@@ -13,7 +13,7 @@ public class UnidadeMedidaDTO {
 
     @Schema(
             description = "Identificador da unidade de medida",
-            example = "1"
+            example = "2"
     )
     private Long id;
 

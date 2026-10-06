@@ -3,9 +3,9 @@ package com.receitarium.receitarium.service;
 import com.receitarium.receitarium.dto.UnidadeMedidaDTO;
 import com.receitarium.receitarium.entity.UnidadeMedida;
 import com.receitarium.receitarium.repository.UnidadeMedidaRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -41,6 +41,7 @@ public class UnidadeMedidaService {
         return converterParaDTO(salva);
     }
 
+    @Transactional(readOnly = true)
     public UnidadeMedidaDTO buscarPorId(Long id) {
 
         UnidadeMedida unidadeMedida =
@@ -53,6 +54,7 @@ public class UnidadeMedidaService {
         return converterParaDTO(unidadeMedida);
     }
 
+    @Transactional(readOnly = true)
     public List<UnidadeMedidaDTO> listarTodas() {
 
         return repository.listarTodas()
